@@ -46,6 +46,7 @@ public:
         }
         catch (std::exception & ex) {
             std::cout << "Ups O_O! Something is happened with allocating heap for the inputs: " << ex.what() << std::endl;
+            return;
         }
     }
 
@@ -128,7 +129,9 @@ public:
         NeuralCluster<T> neuralcluster;
         Domain* pNextDomain;
         Domain* pPreviousDomain;
-
+        
+        Domain(NeuralCluster<T> neuralcluster = NeuralCluster<T>(), Domain* pNextDomain = nullptr, Domain* pPreviousDomain = nullptr) {}
+        ~Domain() {}
     };
 
 private:
@@ -138,7 +141,7 @@ private:
 
 int main(int argc, char* argv[])
 {
-    Neuron<double> neurons; //Just will create a dead neuron;
+    Neuron<double> neurons; //Just will create a dead neuron.
     //NeuralCluster<double> nc1(9);
 
     std::cout << "Hello World!\n";
