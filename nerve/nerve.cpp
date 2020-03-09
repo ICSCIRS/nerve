@@ -6,6 +6,10 @@
 #include <iostream>
 
 enum class Activation { SIGMOID, SOFTMAX, RELU };
+template <typename T> struct DataSet;
+template<typename T> class Neuron;
+template<typename T> class NeuralClaster;
+template<typename T> class NeuralNetwork;
 
 //Just a mere neuron
 template <typename T>
@@ -40,7 +44,7 @@ public:
 
         try {
             inputs = new T * [numOfWeights]();
-            for (int i = 0; i < numOfWeights; ++i) {
+            for (unsigned i = 0; i < numOfWeights; ++i) {
                 inputs[i] = nullptr;
             }
         }
@@ -96,6 +100,8 @@ private:
 // In conventional sense it's calling a layer, but I like to name it a neural cluster.
 template<typename T>
 class NeuralCluster {
+    friend NeuralNetwork<T>;
+
 public:
     unsigned numOfNeurons;
 
@@ -118,31 +124,87 @@ private:
     Neuron<T>* neurons;
 };
 
+
+
+// Neural network
 template<typename T>
 class NeuralNetwork {
 public:
-    NeuralNetwork(unsigned numOfInputs) : numOfInputs(numOfInputs) {}
+    NeuralNetwork(unsigned numOfInputs) : numOfInputs(numOfInputs), head(nullptr), tail(nullptr) {}
     ~NeuralNetwork() {}
 
+    void pushCluster(NeuralCluster<T>& neuralcluster);
+
+private:
+    template<typename T>
     class Domain {
     public:
         NeuralCluster<T> neuralcluster;
-        Domain* pNextDomain;
-        Domain* pPreviousDomain;
+        Domain<T>* pNextDomain;
+        Domain<T>* pPreviousDomain;
         
-        Domain(NeuralCluster<T> neuralcluster = NeuralCluster<T>(), Domain* pNextDomain = nullptr, Domain* pPreviousDomain = nullptr) {}
-        ~Domain() {}
+        Domain(NeuralCluster<T>& neuralcluster = NeuralCluster<T>(), Domain<T>* pPreviousDomain = nullptr, Domain<T>* pNextDomain = nullptr):
+            neuralcluster(neuralcluster),
+            pNextDomain(pNextDomain),
+            pPreviousDomain(pPreviousDomain) {}
+
+        ~Domain() {
+            if (head != nullptr) {
+                while (head != nullptr) {
+                    Domain<T>* current = head;
+                    head = current->pNextDomain;
+                    delete current;
+                    std::cout << "A Domain has been deleted... " << this << std::endl;
+                }
+                std::cout << "The NeuralNetwork has been deleted... " << this << std::endl;
+            }
+        }
     };
 
-private:
     unsigned numOfInputs;
+    unsigned numOfNeuronsOfCurentCluster = 0;
+    Domain<T>* head;
+    Domain<T>* tail;
 };
 
+template<typename T>
+void NeuralNetwork<T>::pushCluster(NeuralCluster<T>& neuralcluster) {
+    if (head == nullptr) {
+        head = new Domain<T>(neuralcluster);
+        for (unsigned i = 0; i < (head->neuralcluster).numOfNeurons; ++i) {
+            (head->neuralcluster).neurons[i].animate(numOfInputs, Activation::SIGMOID);
+        }
+        numOfNeuronsOfCurentCluster = (head->neuralcluster).numOfNeurons;
+    }
+    else {
+        Domain<T>* current = head;
+        while (current->pNextDomain != nullptr) {
+            current = current->pNextDomain;
+        }
+        current->pNextDomain = new Domain<T>(neuralcluster, current);
+        
+        for (unsigned i = 0; i < (current->pNextDomain->neuralcluster).numOfNeurons; ++i) {
+            (current->pNextDomain->neuralcluster).neurons[i].animate(numOfNeuronsOfCurentCluster, Activation::SIGMOID);
+        }
+        numOfNeuronsOfCurentCluster = (current->pNextDomain->neuralcluster).numOfNeurons;
+    }
+}
 
 int main(int argc, char* argv[])
 {
     Neuron<double> neurons; //Just will create a dead neuron.
-    //NeuralCluster<double> nc1(9);
+
+    NeuralCluster<double> nc1(3);
+    NeuralCluster<double> nc2(9);
+    NeuralCluster<double> nc3(9);
+    NeuralCluster<double> nc4(1);
+
+    NeuralNetwork<double> nn(3);
+
+    nn.pushCluster(nc1);
+    nn.pushCluster(nc2);
+    nn.pushCluster(nc3);
+    nn.pushCluster(nc4);
 
     std::cout << "Hello World!\n";
 
