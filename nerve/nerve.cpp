@@ -1,4 +1,4 @@
-// nerve.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Nerve - a simple library for building the deep neural networks.
 // I'm just writing this code. I have no an idea what shall be done as result :))
 
 #include <iostream>
