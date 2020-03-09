@@ -8,7 +8,7 @@
 enum class Activation { SIGMOID, SOFTMAX, RELU };
 template <typename T> struct DataSet;
 template<typename T> class Neuron;
-template<typename T> class NeuralClaster;
+template<typename T> class NeuralCluster;
 template<typename T> class NeuralNetwork;
 
 //Just a mere neuron
