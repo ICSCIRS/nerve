@@ -1,16 +1,20 @@
-// Nerve - a simple library for building the deep neural networks.
+// Nerve - a simple library for building the deep neural networks. 
 // I'm just writing this code. I have no an idea what shall be done as result :))
+// Best regards from https://github.com/Runsolar/easydnn
+// 09.03.2020
 
 #include <iostream>
 
 enum class Activation { SIGMOID, SOFTMAX, RELU };
 
+//Just a mere neuron
 template <typename T>
 class Neuron {
 public:
     unsigned numOfWeights;
     Activation transferFunction;
 
+    // This default constructor just make a dead neuron xD
     Neuron() : numOfWeights(0), condition(0), delta(0), weights(nullptr), inputs(nullptr), transferFunction(Activation::SIGMOID) {}
     ~Neuron() {
         if (weights != nullptr) {
@@ -21,6 +25,7 @@ public:
         }
     }
 
+    // This method can enliven a dead neuron ;)
     void animate(unsigned numOfWeights, Activation transferFunction) {
         this->numOfWeights = numOfWeights;
         this->transferFunction = transferFunction;
@@ -29,7 +34,7 @@ public:
             weights = new T[numOfWeights]();
         }
         catch (std::exception & ex) {
-            std::cout << "Something is happened with allocating heap for the weights: " << ex.what() << std::endl;
+            std::cout << "Ups O_O! Something is happened with allocating heap for the weights: " << ex.what() << std::endl;
             return;
         }
 
@@ -40,9 +45,10 @@ public:
             }
         }
         catch (std::exception & ex) {
-            std::cout << "Something is happened with allocating heap for the inputs: " << ex.what() << std::endl;
+            std::cout << "Ups O_O! Something is happened with allocating heap for the inputs: " << ex.what() << std::endl;
         }
     }
+
 
     void ForwardPropagation() {
         condition = 0;
@@ -85,17 +91,19 @@ private:
     T** inputs;
 };
 
+
+// In conventional sense it's calling a layer, but I like to name it a neural cluster.
 template<typename T>
 class NeuralClaster {
 public:
     unsigned numOfNeurons;
 
-    explicit NeuralClaster(unsigned numOfNeurons) : numOfNeurons(numOfNeurons), neurons(nullptr) {
+    explicit NeuralCluster(unsigned numOfNeurons) : numOfNeurons(numOfNeurons), neurons(nullptr) {
         try {
             neurons = new Neuron<T>[numOfNeurons]();
         }
         catch (std::exception & ex) {
-            std::cout << "A something wrong is happened with allocating heap for the neural claster: " << ex.what() << std::endl;
+            std::cout << "Ups O_O! Something wrong is happened with allocating heap for the neural cluster: " << ex.what() << std::endl;
         }
 
     }
@@ -117,7 +125,8 @@ public:
 
     class Domain {
     public:
-
+        Domain* pNextDomain;
+        Domain* pPreviousDomain;
     };
 
 private:
@@ -128,7 +137,7 @@ private:
 int main(int argc, char* argv[])
 {
     Neuron<double> neurons; //Just will create a dead neuron;
-    //NeuralClaster<double> nc1(9);
+    //NeuralCluster<double> nc1(9);
 
     std::cout << "Hello World!\n";
 
