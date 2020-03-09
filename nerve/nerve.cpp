@@ -157,11 +157,11 @@ private:
     template<typename T>
     class Domain {
     public:
-        NeuralCluster<T>& neuralcluster;
+        const NeuralCluster<T>& neuralcluster;
         Domain<T>* pNextDomain;
         Domain<T>* pPreviousDomain;
         
-        Domain(NeuralCluster<T>& neuralcluster = NeuralCluster<T>(), Domain<T>* pPreviousDomain = nullptr, Domain<T>* pNextDomain = nullptr):
+        Domain(const NeuralCluster<T>& neuralcluster = NeuralCluster<T>(), Domain<T>* pPreviousDomain = nullptr, Domain<T>* pNextDomain = nullptr):
             neuralcluster(neuralcluster),
             pNextDomain(pNextDomain),
             pPreviousDomain(pPreviousDomain) {}
