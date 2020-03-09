@@ -109,9 +109,9 @@ class NeuralCluster {
     friend NeuralNetwork<T>;
 
 public:
-    unsigned numOfNeurons;
+    const unsigned numOfNeurons;
 
-    explicit NeuralCluster(unsigned numOfNeurons) : numOfNeurons(numOfNeurons), neurons(nullptr) {
+    explicit NeuralCluster(const unsigned numOfNeurons) : numOfNeurons(numOfNeurons), neurons(nullptr) {
         try {
             neurons = new Neuron<T>[numOfNeurons]();
         }
@@ -137,7 +137,7 @@ private:
 template<typename T>
 class NeuralNetwork {
 public:
-    NeuralNetwork(unsigned numOfInputs) : numOfInputs(numOfInputs), head(nullptr), tail(nullptr) {}
+    NeuralNetwork(const unsigned numOfInputs) : numOfInputs(numOfInputs), head(nullptr), tail(nullptr) {}
     ~NeuralNetwork() {  
         if (head != nullptr) {
             while (head != nullptr) {
@@ -167,7 +167,7 @@ private:
             pPreviousDomain(pPreviousDomain) {}
     };
 
-    unsigned numOfInputs;
+    const unsigned numOfInputs;
     unsigned numOfNeuronsOfCurentCluster = 0;
     Domain<T>* head;
     Domain<T>* tail;
