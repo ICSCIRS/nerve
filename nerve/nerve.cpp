@@ -94,7 +94,7 @@ private:
 
 // In conventional sense it's calling a layer, but I like to name it a neural cluster.
 template<typename T>
-class NeuralClaster {
+class NeuralCluster {
 public:
     unsigned numOfNeurons;
 
@@ -107,7 +107,7 @@ public:
         }
 
     }
-    ~NeuralClaster() {
+    ~NeuralCluster() {
         if (neurons != nullptr) {
             delete[] neurons;
         }
@@ -125,8 +125,10 @@ public:
 
     class Domain {
     public:
+        NeuralCluster<T> neuralcluster;
         Domain* pNextDomain;
         Domain* pPreviousDomain;
+
     };
 
 private:
