@@ -19,15 +19,8 @@ public:
     Activation transferFunction;
 
     // This default constructor just make a dead neuron xD
-    Neuron() : numOfWeights(0), condition(0), delta(0), weights(nullptr), inputs(nullptr), transferFunction(Activation::SIGMOID) {}
-    ~Neuron() {
-        if (weights != nullptr) {
-            delete[] weights;
-        }
-        if (inputs != nullptr) {
-            delete[] inputs;
-        }
-    }
+    Neuron() : numOfWeights(0), condition(0), delta(0), weights(nullptr), inputs(nullptr), transferFunction(Activation::SIGMOID) {};
+    ~Neuron();
 
     // This method can enliven a dead neuron ;)
     void animate(unsigned numOfWeights, Activation transferFunction) {
@@ -45,7 +38,7 @@ public:
         try {
             inputs = new T * [numOfWeights]();
             for (unsigned i = 0; i < numOfWeights; ++i) {
-                inputs[i] = nullptr;
+                //inputs[i] = nullptr;
             }
         }
         catch (std::exception & ex) {
@@ -96,6 +89,19 @@ private:
     T** inputs;
 };
 
+template<typename T>
+Neuron<T>::~Neuron() {
+    if (weights != nullptr) {
+        delete[] weights;
+        weights = nullptr;
+    }
+    if (inputs != nullptr) {
+        delete[] inputs;
+        inputs = nullptr;
+    }
+}
+
+
 
 // In conventional sense it's calling a layer, but I like to name it a neural cluster.
 template<typename T>
@@ -117,6 +123,7 @@ public:
     ~NeuralCluster() {
         if (neurons != nullptr) {
             delete[] neurons;
+            neurons = nullptr;
         }
     }
 
@@ -131,7 +138,18 @@ template<typename T>
 class NeuralNetwork {
 public:
     NeuralNetwork(unsigned numOfInputs) : numOfInputs(numOfInputs), head(nullptr), tail(nullptr) {}
-    ~NeuralNetwork() {}
+    ~NeuralNetwork() {  
+        if (head != nullptr) {
+            while (head != nullptr) {
+                Domain<T>* current = head;
+                head = current->pNextDomain;
+                delete current;
+                std::cout << "A Domain has been deleted... " << this << std::endl;
+            }
+            head = tail = nullptr;
+            std::cout << "The NeuralNetwork has been deleted... " << this << std::endl;
+        }
+    }
 
     void pushCluster(NeuralCluster<T>& neuralcluster);
 
@@ -139,7 +157,7 @@ private:
     template<typename T>
     class Domain {
     public:
-        NeuralCluster<T> neuralcluster;
+        NeuralCluster<T>& neuralcluster;
         Domain<T>* pNextDomain;
         Domain<T>* pPreviousDomain;
         
@@ -147,18 +165,6 @@ private:
             neuralcluster(neuralcluster),
             pNextDomain(pNextDomain),
             pPreviousDomain(pPreviousDomain) {}
-
-        ~Domain() {
-            if (head != nullptr) {
-                while (head != nullptr) {
-                    Domain<T>* current = head;
-                    head = current->pNextDomain;
-                    delete current;
-                    std::cout << "A Domain has been deleted... " << this << std::endl;
-                }
-                std::cout << "The NeuralNetwork has been deleted... " << this << std::endl;
-            }
-        }
     };
 
     unsigned numOfInputs;
@@ -192,7 +198,7 @@ void NeuralNetwork<T>::pushCluster(NeuralCluster<T>& neuralcluster) {
 
 int main(int argc, char* argv[])
 {
-    Neuron<double> neurons; //Just will create a dead neuron.
+    //Neuron<double> neurons; //Just will create a dead neuron.
 
     NeuralCluster<double> nc1(3);
     NeuralCluster<double> nc2(9);
@@ -209,4 +215,6 @@ int main(int argc, char* argv[])
     std::cout << "Hello World!\n";
 
     return 0;
+
+
 }
