@@ -278,7 +278,7 @@ private:
 
 
 
-// Neural network
+// Neural network is represented a doubly linked list data structure of a clusters of the neurons
 template<typename T>
 class NeuralNetwork {
 public:
