@@ -402,8 +402,16 @@ void NeuralNetwork<T>::feedForward(const Vector<T>& input) const {
             }
         }
         (current->neuralcluster).forwardProp();
+
+        for (int i = 0; i < (current->neuralcluster).numOfNeurons; ++i) {
+            std::cout << (current->neuralcluster).neurons[i].condition << std::endl;
+        }
+        std::cout << std::endl;
+
         current = current->pNextDomain;
     }
+
+    std::cout << std::endl;
 }
 
 template <typename T>
@@ -448,7 +456,7 @@ int main(int argc, char* argv[])
     DataSet<double> dataset(inputs, expectedLabels);
     nn.mountDataSet(dataset);
 
-    nn.trainNerve(100);
+    nn.trainNerve(1);
 
     std::cout << "Hello World!\n";
 
