@@ -1,16 +1,17 @@
-// Nerve - a simple library for building the deep neural networks. 
+// Nerve - a simple library for making a deep neural network. 
 // I'm just writing this code. I have no an idea what shall be done as result :))
 // Best regards from https://github.com/Runsolar/easydnn
 // 09.03.2020
 
 #include <iostream>
+//#include <ppl.h>
 
 enum class Activation { SIGMOID, SOFTMAX, RELU };
 template <typename T> struct DataSet;
 template<typename T> class Neuron;
 template<typename T> class NeuralCluster;
 template<typename T> class NeuralNetwork;
-#include <ppl.h>
+
 
 
 template<typename T>
@@ -143,7 +144,7 @@ public:
     Activation transferFunction;
 
     // This default constructor just make a dead neuron xD
-    Neuron() : numOfWeights(0), condition(0), delta(0), weights(nullptr), inputs(nullptr), transferFunction(Activation::SIGMOID) {};
+    Neuron() : numOfWeights(0), condition(0), error(0), weights(nullptr), inputs(nullptr), transferFunction(Activation::SIGMOID) {};
     ~Neuron();
 
     // This method can enliven a dead neuron ;)
@@ -210,7 +211,7 @@ public:
 
 private:
     T condition;
-    T delta;
+    T error;
     T* weights;
     T** inputs;
 };
@@ -254,6 +255,14 @@ public:
         }
 
 //        Concurrency::parallel_for(0, numOfNeurons, 1, [&](int i) {neurons[i].forwardPropagation(); });
+    }
+
+    void BackProp() {
+
+        for (int i = 0; i < numOfNeurons; ++i) {
+            //neurons[i].forwardPropagation();
+        }
+
     }
 
     ~NeuralCluster() {
