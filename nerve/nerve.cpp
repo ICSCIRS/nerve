@@ -10,6 +10,7 @@ template <typename T> struct DataSet;
 template<typename T> class Neuron;
 template<typename T> class NeuralCluster;
 template<typename T> class NeuralNetwork;
+#include <ppl.h>
 
 
 template<typename T>
@@ -247,9 +248,12 @@ public:
     }
 
     void forwardProp() {
+
         for (int i = 0; i < numOfNeurons; ++i) {
             neurons[i].forwardPropagation();
         }
+
+//        Concurrency::parallel_for(0, numOfNeurons, 1, [&](int i) {neurons[i].forwardPropagation(); });
     }
 
     ~NeuralCluster() {
@@ -402,16 +406,16 @@ void NeuralNetwork<T>::feedForward(const Vector<T>& input) const {
             }
         }
         (current->neuralcluster).forwardProp();
-
+/*
         for (int i = 0; i < (current->neuralcluster).numOfNeurons; ++i) {
             std::cout << (current->neuralcluster).neurons[i].condition << std::endl;
         }
         std::cout << std::endl;
-
+*/
         current = current->pNextDomain;
     }
 
-    std::cout << std::endl;
+//    std::cout << std::endl;
 }
 
 template <typename T>
@@ -456,7 +460,7 @@ int main(int argc, char* argv[])
     DataSet<double> dataset(inputs, expectedLabels);
     nn.mountDataSet(dataset);
 
-    nn.trainNerve(1);
+    nn.trainNerve(10000);
 
     std::cout << "Hello World!\n";
 
