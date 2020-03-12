@@ -401,7 +401,6 @@ void NeuralNetwork<T>::feedForward(const Vector<T>& input) const {
                 }
             }
         }
-
         (current->neuralcluster).forwardProp();
         current = current->pNextDomain;
     }
@@ -449,7 +448,7 @@ int main(int argc, char* argv[])
     DataSet<double> dataset(inputs, expectedLabels);
     nn.mountDataSet(dataset);
 
-    nn.trainNerve(8000);
+    nn.trainNerve(100);
 
     std::cout << "Hello World!\n";
 
