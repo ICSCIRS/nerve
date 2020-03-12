@@ -15,8 +15,8 @@ template<typename T> class NeuralNetwork;
 template<typename T>
 class Array {
 public:
-    unsigned len;
-    explicit Array(const unsigned& len) : len(len), data(nullptr) {
+    int len;
+    explicit Array(const int& len) : len(len), data(nullptr) {
         try {
             data = new T[len]();
             //std::cout << "A new Vector hase been created... " << this << std::endl;
@@ -36,13 +36,13 @@ protected:
 
 template<typename T>
 class Vector : public Array<T> {
-
+    friend NeuralNetwork<T>;
 public:
-    unsigned len;
+    int len;
 
     Vector() = delete;
     //Vector() : len(0), data(nullptr) {}
-    explicit Vector(const unsigned& len) : Array<T>::Array(len), len(len) {
+    explicit Vector(const int& len) : Array<T>::Array(len), len(len) {
         try {
             pdata = new T * [len]();
         }
@@ -51,14 +51,14 @@ public:
             return;
         }
 
-        for (unsigned i = 0; i < len; ++i) {
+        for (int i = 0; i < len; ++i) {
             pdata[i] = &(Array<T>::data[i]);
         }
     }
 
     Vector(const Vector<T>& vec) : Vector(vec.len) {
         if (this == &vec) return;
-        for (unsigned i = 0; i < len; ++i) {
+        for (int i = 0; i < len; ++i) {
             *pdata[i] = *vec.pdata[i];
         }
     }
@@ -68,11 +68,11 @@ public:
         //std::cout << "A Vector hase been deleted... " << this << std::endl;
     }
 
-    T& operator[](const unsigned index) {
+    T& operator[](const int index) {
         return *pdata[index];
     }
 
-    const T& operator[](const unsigned index) const {
+    const T& operator[](const int index) const {
         return *pdata[index];
     }
 
@@ -86,25 +86,28 @@ template<typename T>
 class Matrix {
 
 public:
+    int cols;
+    int rows;
+
     Matrix() = delete;
     //Matrix(): rows(0), cols(0), matrix(nullptr) {}
 
-    explicit Matrix(const unsigned rows, const unsigned cols) : rows(rows), cols(cols) {
+    explicit Matrix(const int rows, const int cols) : rows(rows), cols(cols) {
         matrix = new Vector<T> * [cols];
-        for (unsigned i = 0; i < cols; ++i) {
+        for (int i = 0; i < cols; ++i) {
             matrix[i] = new Vector<T>(rows);
         }
         //std::cout << "A new matrix has been created... " << this << std::endl;
     }
 
-    Vector<T>& operator[](const unsigned index) const {
+    Vector<T>& operator[](const int index) const {
         return *matrix[index];
     }
 
     /*
     const Matrix<T>& operator=(const Matrix<T>& matrixObj) const {
         if (cols == matrixObj.cols && rows == matrixObj.rows) {
-            for (unsigned i = 0, j; i < cols; ++i) {
+            for (int i = 0, j; i < cols; ++i) {
                 T& col = *matrix[i];
                 for (j = 0; j < rows; j++) {
                     col[j] = matrixObj[i][j];
@@ -116,7 +119,7 @@ public:
 */
 
     ~Matrix() {
-        for (unsigned i = 0; i < cols; ++i) {
+        for (int i = 0; i < cols; ++i) {
             delete matrix[i];
         }
         delete[] matrix;
@@ -124,8 +127,7 @@ public:
     }
 
 protected:
-    unsigned cols;
-    unsigned rows;
+
     Vector<T>** matrix;
 };
 
@@ -136,7 +138,7 @@ class Neuron {
     friend NeuralNetwork<T>;
 
 public:
-    unsigned numOfWeights;
+    int numOfWeights;
     Activation transferFunction;
 
     // This default constructor just make a dead neuron xD
@@ -144,7 +146,7 @@ public:
     ~Neuron();
 
     // This method can enliven a dead neuron ;)
-    void animate(unsigned numOfWeights, Activation transferFunction) {
+    void animate(int numOfWeights, Activation transferFunction) {
         this->numOfWeights = numOfWeights;
         this->transferFunction = transferFunction;
 
@@ -158,23 +160,25 @@ public:
 
         try {
             inputs = new T * [numOfWeights]();
-            for (unsigned i = 0; i < numOfWeights; ++i) {
-                inputs[i] = nullptr;
-            }
         }
         catch (std::exception & ex) {
             std::cout << "Ups O_O! Something is happened with allocating heap for the inputs: " << ex.what() << std::endl;
             return;
         }
+
+        for (int i = 0; i < numOfWeights; ++i) {
+            weights[i] = static_cast<int>(rand() % 2) ? static_cast<T>(rand()) / RAND_MAX : static_cast<T>(rand()) / -RAND_MAX;
+            inputs[i] = nullptr;
+        }
     }
 
 
-    void ForwardPropagation() {
+    void forwardPropagation() {
         condition = 0;
 
         if (numOfWeights != 0) {
 
-            for (unsigned i = 0; i < numOfWeights; ++i) {
+            for (int i = 0; i < numOfWeights; ++i) {
                 condition += weights[i] * *inputs[i];
             }
 
@@ -230,9 +234,9 @@ class NeuralCluster {
     friend NeuralNetwork<T>;
 
 public:
-    const unsigned numOfNeurons;
+    const int numOfNeurons;
 
-    explicit NeuralCluster(const unsigned numOfNeurons) : numOfNeurons(numOfNeurons), neurons(nullptr) {
+    explicit NeuralCluster(const int numOfNeurons) : numOfNeurons(numOfNeurons), neurons(nullptr) {
         try {
             neurons = new Neuron<T>[numOfNeurons]();
         }
@@ -241,6 +245,13 @@ public:
         }
 
     }
+
+    void forwardProp() {
+        for (int i = 0; i < numOfNeurons; ++i) {
+            neurons[i].forwardPropagation();
+        }
+    }
+
     ~NeuralCluster() {
         if (neurons != nullptr) {
             delete[] neurons;
@@ -258,9 +269,9 @@ private:
 template<typename T>
 class NeuralNetwork {
 public:
-    T m_error = 0;
+    mutable T m_error = 0;
 
-    NeuralNetwork(const unsigned numOfInputs) : numOfInputs(numOfInputs), head(nullptr), tail(nullptr) {}
+    NeuralNetwork(const int numOfInputs) : numOfInputs(numOfInputs), input(numOfInputs), head(nullptr), tail(nullptr) {}
     ~NeuralNetwork() {  
         if (head != nullptr) {
             while (head != nullptr) {
@@ -276,35 +287,36 @@ public:
 
     void pushCluster(NeuralCluster<T>& neuralcluster);
     void mountDataSet(const DataSet<T>& dataset);
-    void trainNerve(const unsigned &epochs) const;
+    void trainNerve(const int &epochs) const;
     void feedForward(const Vector<T>& input) const;
 
 private:
 
     class Domain {
     public:
-        const NeuralCluster<T>& neuralcluster;
+        NeuralCluster<T>& neuralcluster;
         Domain* pNextDomain;
         Domain* pPreviousDomain;
         
-        Domain(const NeuralCluster<T>& neuralcluster = NeuralCluster<T>(), Domain* pPreviousDomain = nullptr, Domain* pNextDomain = nullptr):
+        Domain(NeuralCluster<T>& neuralcluster = NeuralCluster<T>(), Domain* pPreviousDomain = nullptr,  Domain* pNextDomain = nullptr):
             neuralcluster(neuralcluster),
             pNextDomain(pNextDomain),
             pPreviousDomain(pPreviousDomain) {}
     };
 
-    const unsigned numOfInputs;
-    unsigned numOfNeuronsOfPreviousCluster = 0;
+    const int numOfInputs;
+    int numOfNeuronsOfPreviousCluster = 0;
     Domain* head;
     Domain* tail;
     const DataSet<T>* pDataSet = nullptr;
+    Vector<T> input;
 };
 
 template<typename T>
 void NeuralNetwork<T>::pushCluster(NeuralCluster<T>& neuralcluster) {
     if (head == nullptr) {
         head = new Domain(neuralcluster);
-        for (unsigned i = 0; i < (head->neuralcluster).numOfNeurons; ++i) {
+        for (int i = 0; i < (head->neuralcluster).numOfNeurons; ++i) {
             (head->neuralcluster).neurons[i].animate(numOfInputs, Activation::SIGMOID);
         }
         numOfNeuronsOfPreviousCluster = (head->neuralcluster).numOfNeurons;
@@ -316,10 +328,10 @@ void NeuralNetwork<T>::pushCluster(NeuralCluster<T>& neuralcluster) {
         }
         current->pNextDomain = new Domain(neuralcluster, current);
         
-        for (unsigned i = 0; i < (current->pNextDomain->neuralcluster).numOfNeurons; ++i) {
+        for (int i = 0; i < (current->pNextDomain->neuralcluster).numOfNeurons; ++i) {
             (current->pNextDomain->neuralcluster).neurons[i].animate(numOfNeuronsOfPreviousCluster, Activation::SIGMOID);
 
-            for (unsigned j = 0; j < numOfNeuronsOfPreviousCluster; ++j) {
+            for (int j = 0; j < numOfNeuronsOfPreviousCluster; ++j) {
                 (current->pNextDomain->neuralcluster).neurons[i].inputs[j] = &((current->pNextDomain->pPreviousDomain->neuralcluster).neurons[j].condition);
             }
         }
@@ -334,33 +346,33 @@ void NeuralNetwork<T>::mountDataSet(const DataSet<T>& dataset) {
 
 
 template<typename T>
-void NeuralNetwork<T>::trainNerve(const unsigned &epochs) const {
+void NeuralNetwork<T>::trainNerve(const int& epochs) const {
     Domain* current = tail;
     //NeuralCluster<T>* pNeuralCluster = &current->layer;
-    T r;
-    T delta_err;
+    //T r;
+    //T delta_err;
 
-    Vector<T> input(pDataSet->inputs.cols);
+    //Vector<T> input(pDataSet->inputs.cols);
     Vector<T> label(pDataSet->labels.rows);
 
-    for (unsigned epoch = 0; epoch < epochs; ++epoch) {
+    for (int epoch = 0; epoch < epochs; ++epoch) {
         //std::cout << "!!!!!!!!!!!!!!!!!epoch is: " << epoch << std::endl;
 
-        for (unsigned j = 0; j < pDataSet->inputs.rows; ++j)
+        for (int j = 0; j < pDataSet->inputs.rows; ++j)
         {
-            for (unsigned i = 0; i < pDataSet->inputs.cols; ++i) {
-                input[i] = pDataSet->inputs[i][j];
+            for (int i = 0; i < pDataSet->inputs.cols; ++i) {
+                *input.pdata[i] = pDataSet->inputs[i][j];
             }
 
-            for (unsigned i = 0; i < pDataSet->labels.rows; ++i) {
+            for (int i = 0; i < pDataSet->labels.rows; ++i) {
                 label[i] = pDataSet->labels[j][i];
             }
 
             feedForward(input);
 
-            m_error = static_cast<T>(0);
+            m_error = 0;
 /*
-            for (unsigned i = 0; i < (pLayer->outputs).len; ++i) {
+            for (int i = 0; i < (pLayer->outputs).len; ++i) {
                 delta_err = label[i] - pLayer->outputs[i];
                 m_error += delta_err * delta_err;
             }
@@ -380,15 +392,17 @@ void NeuralNetwork<T>::trainNerve(const unsigned &epochs) const {
 template<typename T>
 void NeuralNetwork<T>::feedForward(const Vector<T>& input) const {
     Domain* current = head;
+
     while (current != nullptr) {
         if (current->pPreviousDomain == nullptr) {
-            for (unsigned i = 0; i < (current->neuralcluster).numOfNeurons; ++i) {
-                for (unsigned j = 0; j < input.len; ++j) {
+            for (int i = 0; i < (current->neuralcluster).numOfNeurons; ++i) {
+                for (int j = 0; j < input.len; ++j) {
                     (current->neuralcluster).neurons[i].inputs[j] = input.pdata[j];
                 }
             }
         }
 
+        (current->neuralcluster).forwardProp();
         current = current->pNextDomain;
     }
 }
@@ -434,6 +448,8 @@ int main(int argc, char* argv[])
 
     DataSet<double> dataset(inputs, expectedLabels);
     nn.mountDataSet(dataset);
+
+    nn.trainNerve(8000);
 
     std::cout << "Hello World!\n";
 
