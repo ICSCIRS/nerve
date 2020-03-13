@@ -4,6 +4,8 @@
 // 09.03.2020
 
 #include <iostream>
+#include<ctime>
+#include <random>
 //#include <ppl.h>
 
 enum class Activation { SIGMOID, SOFTMAX, RELU };
@@ -12,7 +14,7 @@ template<typename T> class Neuron;
 template<typename T> class NeuralCluster;
 template<typename T> class NeuralNetwork;
 
-#define DEFAULTLEARNINGRATE 0.15 //learning rate
+#define DEFAULTLEARNINGRATE 0.25 //learning rate
 
 
 template<typename T>
@@ -60,14 +62,14 @@ public:
             pdata[i] = &(Array<T>::data[i]);
         }
     }
-
+/*
     Vector(const Vector<T>& vec) : Vector(vec.len) {
         if (this == &vec) return;
         for (int i = 0; i < len; ++i) {
             *pdata[i] = *vec.pdata[i];
         }
     }
-
+*/
     ~Vector() {
         delete[] pdata;
         //std::cout << "A Vector hase been deleted... " << this << std::endl;
@@ -108,20 +110,6 @@ public:
     Vector<T>& operator[](const int index) const {
         return *matrix[index];
     }
-
-    /*
-    const Matrix<T>& operator=(const Matrix<T>& matrixObj) const {
-        if (cols == matrixObj.cols && rows == matrixObj.rows) {
-            for (int i = 0, j; i < cols; ++i) {
-                T& col = *matrix[i];
-                for (j = 0; j < rows; j++) {
-                    col[j] = matrixObj[i][j];
-                }
-            }
-        }
-        return *this;
-    }
-*/
 
     ~Matrix() {
         for (int i = 0; i < cols; ++i) {
@@ -172,8 +160,12 @@ public:
             return;
         }
 
+        //std::default_random_engine generator;
+        //std::normal_distribution<T> distribution(0.0, 1);
+
         for (int i = 0; i < numOfWeights; ++i) {
-            weights[i] = static_cast<int>(rand() % 2) ? static_cast<T>(rand()) / RAND_MAX : static_cast<T>(rand()) / -RAND_MAX;
+            weights[i] = static_cast<unsigned>(rand() % 2) ? static_cast<float>(rand()) / RAND_MAX : static_cast<float>(rand()) / -RAND_MAX;
+            //weights[i] = distribution(generator);
             inputs[i] = nullptr;
         }
     }
@@ -326,9 +318,9 @@ public:
     void feedForward() const;
     void feedBack(const Vector<T>& lable) const;
     void predict(const Vector<T>& _input) const;
+    void getResult() const;
 
 private:
-
     class Domain {
     public:
         NeuralCluster<T>& neuralcluster;
@@ -357,6 +349,7 @@ void NeuralNetwork<T>::pushCluster(NeuralCluster<T>& neuralcluster) {
             (head->neuralcluster).neurons[i].animate(numOfInputs, Activation::SIGMOID);
         }
         numOfNeuronsOfPreviousCluster = (head->neuralcluster).numOfNeurons;
+        tail = head;
     }
     else {
         Domain* current = head;
@@ -364,6 +357,7 @@ void NeuralNetwork<T>::pushCluster(NeuralCluster<T>& neuralcluster) {
             current = current->pNextDomain;
         }
         current->pNextDomain = new Domain(neuralcluster, current);
+        tail = current->pNextDomain;
         
         for (int i = 0; i < (current->pNextDomain->neuralcluster).numOfNeurons; ++i) {
             (current->pNextDomain->neuralcluster).neurons[i].animate(numOfNeuronsOfPreviousCluster, Activation::SIGMOID);
@@ -463,6 +457,7 @@ void NeuralNetwork<T>::feedBack(const Vector<T>& lable) const {
             }
             if (current->pPreviousDomain != nullptr) {
                 for (int i = 0; i < (current->pPreviousDomain->neuralcluster).numOfNeurons; ++i) {
+                    (current->pPreviousDomain->neuralcluster).neurons[i].error = 0;
                     for (int j = 0; j < (current->neuralcluster).numOfNeurons; ++j) {
                         (current->pPreviousDomain->neuralcluster).neurons[i].error += (current->neuralcluster).neurons[j].weights[i] * (current->neuralcluster).neurons[j].error;
                     }
@@ -472,6 +467,7 @@ void NeuralNetwork<T>::feedBack(const Vector<T>& lable) const {
         else {
             if (current->pPreviousDomain != nullptr) {
                 for (int i = 0; i < (current->pPreviousDomain->neuralcluster).numOfNeurons; ++i) {
+                    (current->pPreviousDomain->neuralcluster).neurons[i].error = 0;
                     for (int j = 0; j < (current->neuralcluster).numOfNeurons; ++j) {
                         (current->pPreviousDomain->neuralcluster).neurons[i].error += (current->neuralcluster).neurons[j].weights[i] * (current->neuralcluster).neurons[j].error;
                     }
@@ -493,6 +489,14 @@ void NeuralNetwork<T>::predict(const Vector<T>& _input) const {
 }
 
 template <typename T>
+void NeuralNetwork<T>::getResult() const {
+    for (int i = 0; i < (tail->neuralcluster).numOfNeurons; ++i) {
+        std::cout << (tail->neuralcluster).neurons[i].condition << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+template <typename T>
 struct DataSet {
     DataSet(const Matrix<T>& inputs, const Matrix<T>& labels) : inputs(inputs), labels(labels) {};
     const Matrix<T>& inputs;
@@ -501,6 +505,8 @@ struct DataSet {
 
 int main(int argc, char* argv[])
 {
+    srand(time(NULL));
+
     const Matrix<double> inputs(8, 3);
     inputs[0][0] = 0; inputs[1][0] = 0; inputs[2][0] = 0;
     inputs[0][1] = 0; inputs[1][1] = 0; inputs[2][1] = 1;
@@ -534,7 +540,7 @@ int main(int argc, char* argv[])
     DataSet<double> dataset(inputs, expectedLabels);
     nn.mountDataSet(dataset);
 
-    nn.trainNerve(10000);
+    nn.trainNerve(5000);
 
     //Test
     Vector<double> input(inputs.cols);
@@ -544,6 +550,7 @@ int main(int argc, char* argv[])
             input[i] = inputs[i][j];
         }
         nn.predict(input);
+        nn.getResult();
     }
     
 
