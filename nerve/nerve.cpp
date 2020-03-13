@@ -12,6 +12,7 @@ template<typename T> class Neuron;
 template<typename T> class NeuralCluster;
 template<typename T> class NeuralNetwork;
 
+#define DEFAULTLEARNINGRATE 0.15 //learning rate
 
 
 template<typename T>
@@ -184,7 +185,7 @@ public:
         if (numOfWeights != 0) {
 
             for (int i = 0; i < numOfWeights; ++i) {
-                condition += weights[i] * *inputs[i];
+                condition += weights[i] **inputs[i];
             }
 
             switch (transferFunction) {
@@ -201,11 +202,11 @@ public:
         }
     }
 
-    void backPropagation() {
+    void backPropagation(T& lrate = T(DEFAULTLEARNINGRATE)) {
         for (int i = 0; i < numOfWeights; ++i) {
             switch (transferFunction) {
             case Activation::SIGMOID:
-                weights[i] -= error * condition * (1 - condition) * *inputs[i];
+                weights[i] -= lrate * error * condition * (1 - condition) **inputs[i];
                 break;
             case Activation::RELU:
                 break;
@@ -258,7 +259,7 @@ class NeuralCluster {
 public:
     const int numOfNeurons;
 
-    explicit NeuralCluster(const int numOfNeurons) : numOfNeurons(numOfNeurons), neurons(nullptr) {
+    explicit NeuralCluster(const int numOfNeurons, const T lrate = T(DEFAULTLEARNINGRATE)) : numOfNeurons(numOfNeurons), neurons(nullptr) {
         try {
             neurons = new Neuron<T>[numOfNeurons]();
         }
@@ -280,7 +281,7 @@ public:
     void backProp() {
 
         for (int i = 0; i < numOfNeurons; ++i) {
-            neurons[i].backPropagation();
+            neurons[i].backPropagation(lrate);
         }
 
     }
@@ -294,6 +295,7 @@ public:
 
 private:
     Neuron<T>* neurons;
+    T lrate;
 };
 
 
@@ -454,8 +456,7 @@ void NeuralNetwork<T>::feedBack(const Vector<T>& lable) const {
     //Domain* pPreviousDomain;
 
     while (current != nullptr) {
-        if (current->pNextDomain == nullptr) {
-            
+        if (current->pNextDomain == nullptr) {        
             for (int i = 0; i < lable.len; ++i) {
                 (current->neuralcluster).neurons[i].error = (current->neuralcluster).neurons[i].condition - lable[i];
             }
