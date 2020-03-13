@@ -14,7 +14,7 @@ template<typename T> class Neuron;
 template<typename T> class NeuralCluster;
 template<typename T> class NeuralNetwork;
 
-#define DEFAULTLEARNINGRATE 0.25 //learning rate
+#define DEFAULTLEARNINGRATE 0.15 //learning rate
 
 
 template<typename T>
@@ -136,7 +136,7 @@ public:
     Activation transferFunction;
 
     // This default constructor just make a dead neuron xD
-    Neuron() : numOfWeights(0), condition(0), error(0), weights(nullptr), inputs(nullptr), transferFunction(Activation::SIGMOID) {};
+    Neuron() : numOfWeights(0), condition(0), error(0), bias(0), weights(nullptr), inputs(nullptr), transferFunction(Activation::SIGMOID) {};
     ~Neuron();
 
     // This method can enliven a dead neuron ;)
@@ -162,7 +162,7 @@ public:
 
         //std::default_random_engine generator;
         //std::normal_distribution<T> distribution(0.0, 1);
-
+        bias = static_cast<unsigned>(rand() % 2) ? static_cast<float>(rand()) / RAND_MAX : static_cast<float>(rand()) / -RAND_MAX;
         for (int i = 0; i < numOfWeights; ++i) {
             weights[i] = static_cast<unsigned>(rand() % 2) ? static_cast<float>(rand()) / RAND_MAX : static_cast<float>(rand()) / -RAND_MAX;
             //weights[i] = distribution(generator);
@@ -182,10 +182,10 @@ public:
 
             switch (transferFunction) {
             case Activation::SIGMOID:
-                condition = Sigmoid(condition);
+                condition = Sigmoid(condition + bias);
                 break;
             case Activation::RELU:
-                condition = Relu(condition);
+                condition = Relu(condition + bias);
             case Activation::SOFTMAX:
                 break;
             default:
@@ -209,6 +209,7 @@ public:
             
             }
         }
+        bias -= lrate * error * condition * (1 - condition);
     }
 
     const T Sigmoid(const T& x)
@@ -223,6 +224,7 @@ public:
     }
 
 private:
+    T bias;
     T condition;
     T error;
     T* weights;
@@ -531,7 +533,7 @@ int main(int argc, char* argv[])
     DataSet<double> dataset(inputs, expectedLabels);
     nn.mountDataSet(dataset);
 
-    nn.trainNerve(5000);
+    nn.trainNerve(10000);
 
     //Test
     Vector<double> input(inputs.cols);
