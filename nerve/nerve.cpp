@@ -489,7 +489,6 @@ void NeuralNetwork<T>::predict(const Vector<T>& _input) const {
     for (int i = 0; i < input.len; ++i) {
         *input.pdata[i] = _input[i];
     }
-
     feedForward();
 }
 
@@ -537,15 +536,16 @@ int main(int argc, char* argv[])
 
     nn.trainNerve(10000);
 
-    Vector<double> input(inputs.cols);
     //Test
+    Vector<double> input(inputs.cols);
     for (int j = 0; j < inputs.rows; ++j)
     {
         for (int i = 0; i < inputs.cols; ++i) {
             input[i] = inputs[i][j];
         }
+        nn.predict(input);
     }
-    nn.predict(input);
+    
 
 
     std::cout << "Hello World!\n";
