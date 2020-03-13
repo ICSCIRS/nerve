@@ -259,7 +259,7 @@ class NeuralCluster {
 public:
     const int numOfNeurons;
 
-    explicit NeuralCluster(const int numOfNeurons, const T lrate = T(DEFAULTLEARNINGRATE)) : numOfNeurons(numOfNeurons), neurons(nullptr) {
+    explicit NeuralCluster(const int numOfNeurons, const T lrate = T(DEFAULTLEARNINGRATE)) : numOfNeurons(numOfNeurons), lrate(lrate), neurons(nullptr) {
         try {
             neurons = new Neuron<T>[numOfNeurons]();
         }
@@ -325,6 +325,7 @@ public:
     void trainNerve(const int &epochs) const;
     void feedForward() const;
     void feedBack(const Vector<T>& lable) const;
+    void predict(const Vector<T>& _input) const;
 
 private:
 
@@ -484,6 +485,15 @@ void NeuralNetwork<T>::feedBack(const Vector<T>& lable) const {
 }
 
 template <typename T>
+void NeuralNetwork<T>::predict(const Vector<T>& _input) const {
+    for (int i = 0; i < input.len; ++i) {
+        *input.pdata[i] = _input[i];
+    }
+
+    feedForward();
+}
+
+template <typename T>
 struct DataSet {
     DataSet(const Matrix<T>& inputs, const Matrix<T>& labels) : inputs(inputs), labels(labels) {};
     const Matrix<T>& inputs;
@@ -526,6 +536,17 @@ int main(int argc, char* argv[])
     nn.mountDataSet(dataset);
 
     nn.trainNerve(10000);
+
+    Vector<double> input(inputs.cols);
+    //Test
+    for (int j = 0; j < inputs.rows; ++j)
+    {
+        for (int i = 0; i < inputs.cols; ++i) {
+            input[i] = inputs[i][j];
+        }
+    }
+    nn.predict(input);
+
 
     std::cout << "Hello World!\n";
 
