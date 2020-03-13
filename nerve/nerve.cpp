@@ -466,8 +466,6 @@ void NeuralNetwork<T>::feedBack(const Vector<T>& lable) const {
                     }
                 }
             }
-
-            //(current->neuralcluster).backProp();
         }
         else {
             if (current->pPreviousDomain != nullptr) {
@@ -478,6 +476,7 @@ void NeuralNetwork<T>::feedBack(const Vector<T>& lable) const {
                 }
             } 
         }
+
         (current->neuralcluster).backProp();
         current = current->pPreviousDomain;
     }
