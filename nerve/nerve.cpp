@@ -433,22 +433,13 @@ void NeuralNetwork<T>::feedForward() const {
             }
         }
         (current->neuralcluster).forwardProp();
-/*
-        for (int i = 0; i < (current->neuralcluster).numOfNeurons; ++i) {
-            std::cout << (current->neuralcluster).neurons[i].condition << std::endl;
-        }
-        std::cout << std::endl;
-*/
         current = current->pNextDomain;
     }
-
-//    std::cout << std::endl;
 }
 
 template<typename T>
 void NeuralNetwork<T>::feedBack(const Vector<T>& lable) const {
     Domain* current = tail;
-    //Domain* pPreviousDomain;
 
     while (current != nullptr) {
         if (current->pNextDomain == nullptr) {        
