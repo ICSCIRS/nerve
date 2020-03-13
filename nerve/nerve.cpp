@@ -18,6 +18,8 @@ template<typename T>
 class Array {
 public:
     int len;
+
+    Array(): len(0), data(nullptr) {}
     explicit Array(const int& len) : len(len), data(nullptr) {
         try {
             data = new T[len]();
@@ -42,8 +44,8 @@ class Vector : public Array<T> {
 public:
     int len;
 
-    Vector() = delete;
-    //Vector() : len(0), data(nullptr) {}
+    //Vector() = delete;
+    Vector() : len(0), pdata(nullptr) {}
     explicit Vector(const int& len) : Array<T>::Array(len), len(len) {
         try {
             pdata = new T * [len]();
@@ -137,6 +139,7 @@ protected:
 //Just a mere neuron
 template <typename T>
 class Neuron {
+    //friend NeuralCluster<T>;
     friend NeuralNetwork<T>;
 
 public:
@@ -194,6 +197,23 @@ public:
                 break;
             default:
                 break;
+            }
+        }
+    }
+
+    void backPropagation() {
+        for (int i = 0; i < numOfWeights; ++i) {
+            switch (transferFunction) {
+            case Activation::SIGMOID:
+                weights[i] -= error * condition * (1 - condition) * *inputs[i];
+                break;
+            case Activation::RELU:
+                break;
+            case Activation::SOFTMAX:
+                break;
+            default:
+                break;
+            
             }
         }
     }
@@ -257,10 +277,10 @@ public:
 //        Concurrency::parallel_for(0, numOfNeurons, 1, [&](int i) {neurons[i].forwardPropagation(); });
     }
 
-    void BackProp() {
+    void backProp() {
 
         for (int i = 0; i < numOfNeurons; ++i) {
-            //neurons[i].forwardPropagation();
+            neurons[i].backPropagation();
         }
 
     }
@@ -301,7 +321,8 @@ public:
     void pushCluster(NeuralCluster<T>& neuralcluster);
     void mountDataSet(const DataSet<T>& dataset);
     void trainNerve(const int &epochs) const;
-    void feedForward(const Vector<T>& input) const;
+    void feedForward() const;
+    void feedBack(const Vector<T>& lable) const;
 
 private:
 
@@ -381,10 +402,10 @@ void NeuralNetwork<T>::trainNerve(const int& epochs) const {
                 label[i] = pDataSet->labels[j][i];
             }
 
-            feedForward(input);
+            feedForward();
 
-            m_error = 0;
 /*
+            m_error = 0;
             for (int i = 0; i < (pLayer->outputs).len; ++i) {
                 delta_err = label[i] - pLayer->outputs[i];
                 m_error += delta_err * delta_err;
@@ -396,14 +417,14 @@ void NeuralNetwork<T>::trainNerve(const int& epochs) const {
 */
             //printf("error = %f\r\n", m_error);
 
-            //BackPropagation(input, label);
+            feedBack(label);
         }
     }
 }
 
 
 template<typename T>
-void NeuralNetwork<T>::feedForward(const Vector<T>& input) const {
+void NeuralNetwork<T>::feedForward() const {
     Domain* current = head;
 
     while (current != nullptr) {
@@ -425,6 +446,41 @@ void NeuralNetwork<T>::feedForward(const Vector<T>& input) const {
     }
 
 //    std::cout << std::endl;
+}
+
+template<typename T>
+void NeuralNetwork<T>::feedBack(const Vector<T>& lable) const {
+    Domain* current = tail;
+    //Domain* pPreviousDomain;
+
+    while (current != nullptr) {
+        if (current->pNextDomain == nullptr) {
+            
+            for (int i = 0; i < lable.len; ++i) {
+                (current->neuralcluster).neurons[i].error = (current->neuralcluster).neurons[i].condition - lable[i];
+            }
+            if (current->pPreviousDomain != nullptr) {
+                for (int i = 0; i < (current->pPreviousDomain->neuralcluster).numOfNeurons; ++i) {
+                    for (int j = 0; j < (current->neuralcluster).numOfNeurons; ++j) {
+                        (current->pPreviousDomain->neuralcluster).neurons[i].error += (current->neuralcluster).neurons[j].weights[i] * (current->neuralcluster).neurons[j].error;
+                    }
+                }
+            }
+
+            //(current->neuralcluster).backProp();
+        }
+        else {
+            if (current->pPreviousDomain != nullptr) {
+                for (int i = 0; i < (current->pPreviousDomain->neuralcluster).numOfNeurons; ++i) {
+                    for (int j = 0; j < (current->neuralcluster).numOfNeurons; ++j) {
+                        (current->pPreviousDomain->neuralcluster).neurons[i].error += (current->neuralcluster).neurons[j].weights[i] * (current->neuralcluster).neurons[j].error;
+                    }
+                }
+            } 
+        }
+        (current->neuralcluster).backProp();
+        current = current->pPreviousDomain;
+    }
 }
 
 template <typename T>
