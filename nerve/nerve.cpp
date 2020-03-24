@@ -18,8 +18,9 @@ template<typename T> class Neuron;
 template<typename T> class NeuralCluster;
 template<typename T> class NeuralNetwork;
 
-#define DEFAULTLEARNINGRATE 0.15 //learning rate
-
+#define DEFAULT_LEARNINGRATE 0.15 //learning rate
+#define DEFAULT_BIASLEARNINGRATE 0.025 //bias rate
+#define DEFAULT_MOMENTUM 0.25
 
 template<typename T>
 class Array {
@@ -198,7 +199,7 @@ public:
         }
     }
 
-    void backPropagation(T& lrate = T(DEFAULTLEARNINGRATE)) {
+    void backPropagation(T& lrate = T(DEFAULT_LEARNINGRATE), T lbrate = T(DEFAULT_BIASLEARNINGRATE)) {
         for (int i = 0; i < numOfWeights; ++i) {
             switch (transferFunction) {
             case Activation::SIGMOID:
@@ -213,7 +214,7 @@ public:
             
             }
         }
-        bias -= lrate * error * condition * (1 - condition);
+        bias -= lbrate * error * condition * (1 - condition);
     }
 
     const T Sigmoid(const T& x)
@@ -257,7 +258,7 @@ class NeuralCluster {
 public:
     const int numOfNeurons;
 
-    explicit NeuralCluster(const int numOfNeurons, const T lrate = T(DEFAULTLEARNINGRATE)) : numOfNeurons(numOfNeurons), lrate(lrate), neurons(nullptr) {
+    explicit NeuralCluster(const int numOfNeurons, const T lrate = T(DEFAULT_LEARNINGRATE)) : numOfNeurons(numOfNeurons), lrate(lrate), neurons(nullptr) {
         try {
             neurons = new Neuron<T>[numOfNeurons]();
         }
