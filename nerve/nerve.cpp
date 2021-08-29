@@ -1,11 +1,5 @@
 // Nerve - a simple library for making a deep neural network. 
-// I'm just writing this code. I have no an idea what shall be done as result :))
 // Best regards from https://github.com/Runsolar/easydnn
-// 09.03.2020
-/*
-This code is devoted to my dear father Jesus Christ.
-Code by St. Spirit and Danijar Wolf
-*/
 
 #include <iostream>
 #include<ctime>
